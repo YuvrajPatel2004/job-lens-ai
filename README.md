@@ -84,21 +84,15 @@ Compare any of your resume versions against a job posting directly inside the Jo
    ```
 
 3. **Install Dependencies**
+   Run the following single command in the project root directory. It will automatically install all root, backend (`server`), and frontend (`client`) packages:
    ```bash
-   # Install server packages
-   cd server && npm install
-   
-   # Install client packages
-   cd ../client && npm install
+   npm install
    ```
 
 4. **Run Locally**
+   Start both the backend server and the frontend Vite server concurrently with a single command from the project root:
    ```bash
-   # Terminal 1: Start Backend Server
-   cd server && npm run dev
-   
-   # Terminal 2: Start Vite Dev Server
-   cd client && npm run dev
+   npm run dev
    ```
 
 5. **Access the App**

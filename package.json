@@ -1,0 +1,13 @@
+{
+  "name": "joblens-ai-root",
+  "version": "1.0.0",
+  "description": "Root project manager for JobLens AI Fullstack tracker",
+  "scripts": {
+    "postinstall": "npm install --prefix server && npm install --prefix client",
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "build": "npm run build --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

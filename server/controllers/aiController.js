@@ -460,18 +460,28 @@ const compileLatex = async (req, res) => {
       return res.status(400).json({ message: 'LaTeX content is required' });
     }
 
-    // Call public compilation API (latexonline.cc using GET endpoint)
-    const compileUrl = `https://latexonline.cc/compile?text=${encodeURIComponent(latex)}`;
-    const response = await fetch(compileUrl, {
-      method: 'GET',
+    // Call Formatex API
+    const response = await fetch('https://api.formatex.io/api/v1/compile', {
+      method: 'POST',
+      headers: {
+        'X-API-Key': process.env.FORMATEX_API_KEY || 'fex_4b6f834a9241ce033a3a151f2a29f87b4a69cc5bca280d69eab894597fc4c5f8',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        engine: 'pdflatex',
+        latex: latex,
+      }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('LaTeX compilation failed:', errorText);
-      // Clean up log output to show user friendly error message if available
-      const logMatch = errorText.match(/error: [^\n]+/i) || [errorText.slice(0, 300)];
-      return res.status(400).json({ message: `LaTeX compilation failed: ${logMatch[0]}` });
+      try {
+        const errorJson = JSON.parse(errorText);
+        return res.status(400).json({ message: errorJson.error || errorJson.message || 'LaTeX compilation failed' });
+      } catch (e) {
+        return res.status(400).json({ message: `LaTeX compilation failed: ${errorText.slice(0, 300)}` });
+      }
     }
 
     // Pass the PDF directly to the client

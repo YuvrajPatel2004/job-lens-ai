@@ -5,34 +5,34 @@
 @theme {
   --font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
   
-  --color-primary-50: oklch(0.97 0.01 270);
-  --color-primary-100: oklch(0.93 0.03 270);
-  --color-primary-200: oklch(0.86 0.06 270);
-  --color-primary-300: oklch(0.76 0.1 270);
-  --color-primary-400: oklch(0.65 0.17 270);
-  --color-primary-500: oklch(0.55 0.22 270);
-  --color-primary-600: oklch(0.48 0.24 270);
-  --color-primary-700: oklch(0.42 0.2 270);
-  --color-primary-800: oklch(0.35 0.16 270);
-  --color-primary-900: oklch(0.28 0.12 270);
+  --color-primary-50: oklch(0.96 0.015 245);
+  --color-primary-100: oklch(0.91 0.03 245);
+  --color-primary-200: oklch(0.82 0.06 245);
+  --color-primary-300: oklch(0.72 0.10 245);
+  --color-primary-400: oklch(0.65 0.12 245);
+  --color-primary-500: oklch(0.58 0.14 245);
+  --color-primary-600: oklch(0.50 0.13 245);
+  --color-primary-700: oklch(0.42 0.11 245);
+  --color-primary-800: oklch(0.32 0.09 245);
+  --color-primary-900: oklch(0.22 0.06 245);
   
-  --color-accent-400: oklch(0.75 0.15 180);
-  --color-accent-500: oklch(0.65 0.18 180);
-  --color-accent-600: oklch(0.55 0.16 180);
+  --color-accent-400: oklch(0.78 0.08 220);
+  --color-accent-500: oklch(0.68 0.10 220);
+  --color-accent-600: oklch(0.58 0.09 220);
   
-  --color-surface-50: oklch(0.98 0.005 270);
-  --color-surface-100: oklch(0.95 0.01 270);
-  --color-surface-200: oklch(0.9 0.01 270);
-  --color-surface-700: oklch(0.20 0.015 270);
-  --color-surface-800: oklch(0.13 0.015 270);
-  --color-surface-850: oklch(0.09 0.015 270);
-  --color-surface-900: oklch(0.06 0.015 270);
-  --color-surface-950: oklch(0.03 0.015 270);
+  --color-surface-50: oklch(0.98 0.003 240);
+  --color-surface-100: oklch(0.95 0.005 240);
+  --color-surface-200: oklch(0.85 0.008 240);
+  --color-surface-700: oklch(0.22 0.008 240);
+  --color-surface-800: oklch(0.16 0.006 240);
+  --color-surface-850: oklch(0.12 0.005 240);
+  --color-surface-900: oklch(0.09 0.004 240);
+  --color-surface-950: oklch(0.04 0.002 240);
 
-  --color-success: oklch(0.65 0.17 150);
-  --color-warning: oklch(0.75 0.15 80);
-  --color-danger: oklch(0.6 0.2 25);
-  --color-info: oklch(0.65 0.15 240);
+  --color-success: oklch(0.65 0.14 150);
+  --color-warning: oklch(0.75 0.12 80);
+  --color-danger: oklch(0.6 0.18 25);
+  --color-info: oklch(0.65 0.12 240);
 }
 
 /* Base styles */
@@ -65,43 +65,42 @@ body {
   background: var(--color-primary-500);
 }
 
-/* Glass card effect */
+/* Premium Card & Glass effect */
 .glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--color-surface-900);
+  border: 1px solid var(--color-surface-800);
 }
 
 .glass-hover:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--color-surface-850);
+  border-color: var(--color-surface-700);
 }
 
-/* Gradient text */
+/* Elegant Slate/Silver Text */
 .gradient-text {
-  background: linear-gradient(135deg, var(--color-primary-400), var(--color-accent-400));
+  background: linear-gradient(to right, #ffffff 40%, var(--color-surface-200) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  font-weight: 650;
 }
 
-/* Gradient backgrounds */
+/* Minimalist backgrounds */
 .gradient-primary {
-  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));
+  background: var(--color-primary-500);
 }
 
 .gradient-accent {
-  background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));
+  background: var(--color-accent-500);
 }
 
-/* Glow effects */
+/* Clean shadows instead of neon glow */
 .glow-primary {
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.15), 0 0 60px rgba(99, 102, 241, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
 .glow-accent {
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.15), 0 0 60px rgba(6, 182, 212, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
 /* Animation utilities */

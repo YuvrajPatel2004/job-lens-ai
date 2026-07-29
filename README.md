@@ -31,17 +31,28 @@ Compare any of your resume versions against a job posting directly inside the Jo
 * Instantly auto-fill details (company, position, description, salary, location) by pasting any job portal URL.
 * Powered by the **Jina Reader API** proxy to bypass anti-scraping walls (such as LinkedIn, Indeed, ZipRecruiter) with a native fallback text parser.
 
-### 3. Multiple Resume Version Management 📄
+### 3. AI Resume Builder (LaTeX) 📜
+* Generate ATS-friendly PDF resumes from scratch using the Gemini AI model.
+* Uses standard `article` and `geometry` packages to formulate beautiful, highly professional templates similar to "Jake's Resume".
+* Integrated interactive Code Editor with `framer-motion` animations, allowing you to preview and manually tweak the LaTeX syntax before compilation.
+* Instant compiling via public LaTeX endpoints with secure, in-app PDF previews.
+
+### 4. Smart Interview Tracking & Auto-Join ⏱️
+* **Email Reminders:** Background cron jobs track upcoming interviews and fire off timely reminders 1-hour prior to the meeting.
+* **Meeting Auto-Join:** If you keep JobLens open in a tab, the system watches the clock and automatically opens your meeting link exactly when the interview starts!
+* Track behavioral, technical, panel, and HR interviews efficiently with attached feedback and star ratings.
+
+### 5. Multiple Resume Version Management 📄
 * Manage multiple resume versions (e.g., Frontend, Backend, general Full-Stack).
 * Link specific resume versions (filename, label, and version number) directly with job applications to track which version was submitted.
 
-### 4. Gmail Auto-Sync & Email Tracking 📨
+### 6. Gmail Auto-Sync & Email Tracking 📨
 * Connect to your Gmail account via secure OAuth in the web settings panel.
 * Auto-sync email headers to identify and track recruiter emails as Interview requests, Offers, or Rejections.
 * **Self-Serve OAuth Credentials**: Set up custom Client IDs & Secrets directly in the settings UI.
 * **Dynamic Redirect URIs**: Real-time callback origin sync to completely prevent `redirect_uri_mismatch` errors on custom hosted servers.
 
-### 5. Advanced Analytics & CSV Export 📈
+### 7. Advanced Analytics & CSV Export 📈
 * **Conversion Funnel**: Horizontal charts mapping stage-to-stage transition rates (Applications ➔ Screenings ➔ Interviews ➔ Offers).
 * **Resume Version Leaderboard**: Analytics table listing total applications, positive response rates, and offer rates grouped by specific resume versions.
 * **Spreadsheet Exporter**: Download your entire career database as a CSV spreadsheet with one click.

@@ -77,7 +77,17 @@ const ResumeBuilderPage = () => {
       setStep(3);
       toast.success('PDF compiled successfully!');
     } catch (error) {
-      toast.error('Failed to compile LaTeX. There might be syntax errors.');
+      if (error.response?.data instanceof Blob) {
+        try {
+          const text = await error.response.data.text();
+          const json = JSON.parse(text);
+          toast.error(json.message || 'LaTeX compilation failed.');
+        } catch (e) {
+          toast.error('Failed to compile LaTeX. Please check server logs.');
+        }
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to compile LaTeX. Please restart server.');
+      }
     } finally {
       setLoading(false);
     }

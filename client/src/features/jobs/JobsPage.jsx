@@ -103,7 +103,8 @@ const JobsPage = () => {
       }));
       toast.success('Job details extracted successfully!');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to extract job details. Please paste details manually.');
+      toast.error(err.response?.data?.message || 'Failed to extract job details. Please paste details manually.', { duration: 6000 });
+      setTimeout(() => document.getElementById('job-description-input')?.focus(), 100);
     } finally {
       setScraping(false);
     }
@@ -485,7 +486,7 @@ const JobsPage = () => {
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-surface-200/80">Job Description</label>
-            <textarea value={formData.description} onChange={inputHandler('description')} rows={4} placeholder="Paste the job description here..."
+            <textarea id="job-description-input" value={formData.description} onChange={inputHandler('description')} rows={4} placeholder="Paste the job description here..."
               className="w-full px-4 py-2.5 rounded-xl bg-surface-800/80 border border-white/8 text-surface-100 placeholder-surface-200/30 text-sm focus:outline-none focus:border-primary-500/50 resize-none" />
           </div>
           <div className="flex justify-end gap-3 pt-2">

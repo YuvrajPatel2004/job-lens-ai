@@ -37,7 +37,7 @@ const InterviewsPage = () => {
 
   const emptyForm = {
     job: '', type: 'video', scheduledAt: '', duration: 60, location: '',
-    meetingLink: '', interviewerName: '', interviewerEmail: '', notes: '',
+    meetingLink: '', interviewerName: '', interviewerEmail: '', notes: '', autoJoin: false
   };
   const [formData, setFormData] = useState(emptyForm);
   const [feedbackData, setFeedbackData] = useState({ feedback: '', rating: 3 });
@@ -61,6 +61,30 @@ const InterviewsPage = () => {
     fetchData();
   }, [fetchData]);
 
+  // Auto-join meeting watcher
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      interviews.forEach(interview => {
+        if (interview.status === 'scheduled' && interview.autoJoin && interview.meetingLink) {
+          const scheduledTime = new Date(interview.scheduledAt);
+          const diffMs = scheduledTime.getTime() - now.getTime();
+          // Trigger if meeting is starting in <= 1 minute (and not past by more than 1 minute to avoid late popups)
+          if (diffMs > -60000 && diffMs <= 60000) {
+            const joinKey = `joined_${interview._id}`;
+            if (!sessionStorage.getItem(joinKey)) {
+              sessionStorage.setItem(joinKey, 'true');
+              window.open(interview.meetingLink, '_blank');
+              toast.success(`Auto-joining interview: ${interview.job?.company || 'Upcoming'}`);
+            }
+          }
+        }
+      });
+    }, 15000); // Check every 15 seconds
+    
+    return () => clearInterval(interval);
+  }, [interviews]);
+
   const openAddModal = () => {
     setEditingInterview(null);
     setFormData(emptyForm);
@@ -79,6 +103,7 @@ const InterviewsPage = () => {
       interviewerName: interview.interviewerName || '',
       interviewerEmail: interview.interviewerEmail || '',
       notes: interview.notes || '',
+      autoJoin: interview.autoJoin || false,
     });
     setFormModal(true);
   };
@@ -87,11 +112,17 @@ const InterviewsPage = () => {
     e.preventDefault();
     setSaving(true);
     try {
+      // Parse local datetime-local string to UTC ISO string before saving
+      const payload = { ...formData };
+      if (payload.scheduledAt) {
+        payload.scheduledAt = new Date(payload.scheduledAt).toISOString();
+      }
+
       if (editingInterview) {
-        await updateInterview(editingInterview._id, formData);
+        await updateInterview(editingInterview._id, payload);
         toast.success('Interview updated');
       } else {
-        await createInterview(formData);
+        await createInterview(payload);
         toast.success('Interview scheduled');
       }
       setFormModal(false);
@@ -232,7 +263,20 @@ const InterviewsPage = () => {
           </div>
           <Input label="Date & Time *" type="datetime-local" value={formData.scheduledAt} onChange={inputHandler('scheduledAt')} required />
           <Input label="Location" placeholder="Office address or room" value={formData.location} onChange={inputHandler('location')} />
-          <Input label="Meeting Link" placeholder="https://zoom.us/..." value={formData.meetingLink} onChange={inputHandler('meetingLink')} />
+          <div className="space-y-1.5">
+            <Input label="Meeting Link" placeholder="https://zoom.us/..." value={formData.meetingLink} onChange={inputHandler('meetingLink')} />
+            {formData.type === 'video' && (
+              <label className="flex items-center gap-2 mt-2 cursor-pointer text-sm text-surface-200">
+                <input 
+                  type="checkbox" 
+                  checked={formData.autoJoin} 
+                  onChange={(e) => setFormData({ ...formData, autoJoin: e.target.checked })} 
+                  className="w-4 h-4 rounded border-white/10 bg-surface-900 text-primary-500 focus:ring-primary-500/50 focus:ring-offset-surface-800"
+                />
+                Auto-join meeting when it starts
+              </label>
+            )}
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <Input label="Interviewer Name" placeholder="Jane Smith" value={formData.interviewerName} onChange={inputHandler('interviewerName')} />
             <Input label="Interviewer Email" type="email" placeholder="jane@company.com" value={formData.interviewerEmail} onChange={inputHandler('interviewerEmail')} />

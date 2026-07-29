@@ -15,6 +15,10 @@ dotenv.config();
 // Connect to database
 connectDB();
 
+// Initialize Cron Jobs
+const startInterviewCronJob = require('./cron/interviewReminders');
+startInterviewCronJob();
+
 const app = express();
 
 // Security middleware

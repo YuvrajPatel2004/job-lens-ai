@@ -61,6 +61,10 @@ const interviewSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    autoJoin: {
+      type: Boolean,
+      default: false,
+    },
     reminderSentAt: {
       type: Date,
     },

@@ -238,25 +238,32 @@ COMPANY: ${companyName || 'Not specified'}`;
   return JSON.parse(jsonMatch[0]);
 };
 
-// Extract job details from webpage HTML
-const parseJobDetailsFromHtml = async (htmlContent) => {
+// Extract job details from webpage content (HTML or markdown)
+const parseJobDetailsFromHtml = async (content) => {
   const model = getModel();
 
-  const prompt = `You are an expert at extracting structured job details from raw webpage HTML content of a job post.
-Analyze the following HTML content and extract the job details.
+  const prompt = `You are an expert at extracting structured job posting details from webpage content. The content below may be in HTML, markdown, or plain text format — handle all formats gracefully.
 
-Return ONLY a JSON object with the following structure (do not include any markdown styling like \`\`\`json, just return raw JSON):
+Your task: Extract as many job details as possible from the content. If a field is not found, use null for that field. Do NOT make up information — only extract what is explicitly stated.
+
+Return ONLY a JSON object (no markdown fences, no explanation):
 {
   "company": "<company name or null>",
-  "position": "<job position/title or null>",
-  "description": "<complete job description, requirements, responsibilities, and benefits or null>",
-  "location": "<job location or null>",
+  "position": "<exact job title or null>",
+  "description": "<full job description including responsibilities, requirements, qualifications, and benefits. Combine all relevant sections into one cohesive description or null>",
+  "location": "<job location (city, state, country, or 'Remote') or null>",
   "salary": "<salary or compensation range if mentioned, otherwise null>",
   "jobType": "<full-time | part-time | contract | internship | remote | hybrid or null>"
 }
 
-HTML CONTENT:
-${htmlContent}`;
+Tips:
+- The company name is often in the page title, header, or breadcrumb navigation
+- Job type may be labeled as "Employment Type", "Work Type", "Schedule", etc.
+- Location may appear as "Work Location", "Office Location", or near the job title
+- For description, include ALL relevant sections: About the Role, Responsibilities, Requirements, Qualifications, Nice-to-haves, Benefits, etc.
+
+PAGE CONTENT:
+${content}`;
 
   const result = await model.generateContent(prompt);
   const responseText = result.response.text();

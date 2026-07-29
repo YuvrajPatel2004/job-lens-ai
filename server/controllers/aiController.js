@@ -261,67 +261,114 @@ const parseJobUrl = async (req, res) => {
       return res.status(400).json({ message: 'Invalid URL format' });
     }
 
-    // Fetch URL content
-    let htmlContent = '';
-    let fetchedViaJina = false;
+    let pageContent = '';
+    let source = '';
 
-    // Try fetching via Jina Reader first (free scraper designed for LLMs)
+    // Strategy 1: Jina Reader (best for JS-rendered sites like LinkedIn, Indeed, Glassdoor)
     try {
       const jinaUrl = `https://r.jina.ai/${url}`;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+
       const response = await fetch(jinaUrl, {
         headers: {
-          'X-Return-Format': 'text',
+          'Accept': 'text/plain',
+          'X-Return-Format': 'markdown',
+          'X-No-Cache': 'true',
         },
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
 
       if (response.ok) {
-        htmlContent = await response.text();
-        fetchedViaJina = true;
+        const text = await response.text();
+        // Jina sometimes returns error pages; check for meaningful content
+        if (text && text.length > 200 && !text.includes('Unable to retrieve') && !text.includes('403 Forbidden')) {
+          pageContent = text;
+          source = 'jina';
+        }
       }
     } catch (err) {
-      console.warn('Jina Reader fetch failed, falling back to direct fetch:', err.message);
+      console.warn('Jina Reader fetch failed:', err.message);
     }
 
-    // Fallback to direct fetch if Jina Reader failed
-    if (!htmlContent) {
-      try {
-        const response = await fetch(url, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-          },
-        });
+    // Strategy 2: Direct fetch with multiple user-agent rotations
+    if (!pageContent) {
+      const userAgents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15',
+        'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+      ];
 
-        if (response.ok) {
-          htmlContent = await response.text();
+      for (const ua of userAgents) {
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 10000);
+
+          const response = await fetch(url, {
+            headers: {
+              'User-Agent': ua,
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+              'Accept-Language': 'en-US,en;q=0.9',
+              'Cache-Control': 'no-cache',
+            },
+            redirect: 'follow',
+            signal: controller.signal,
+          });
+          clearTimeout(timeout);
+
+          if (response.ok) {
+            const text = await response.text();
+            // Check if we got meaningful HTML (not a login wall or empty shell)
+            if (text && text.length > 500 && (text.includes('job') || text.includes('position') || text.includes('role') || text.includes('description') || text.includes('apply'))) {
+              pageContent = text;
+              source = 'direct';
+              break;
+            }
+          }
+        } catch (err) {
+          continue;
         }
-      } catch (err) {
-        console.error('Direct fetch failed:', err.message);
       }
     }
 
-    if (!htmlContent) {
+    if (!pageContent) {
       return res.status(400).json({
-        message: 'Could not fetch job URL directly or via proxy. Please make sure the link is accessible and try again, or paste details manually.',
+        message: 'Could not fetch content from this job URL. The site may block automated access. Please paste the job details manually.',
       });
     }
 
-    // Clean HTML content (remove scripts, styles, SVGs, etc. to save tokens)
-    const cleanedHtml = htmlContent
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-      .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, '')
-      .replace(/<path\b[^<]*(?:(?!<\/path>)<[^<]*)*<\/path>/gi, '')
-      .replace(/\s+/g, ' ')
-      .slice(0, 30000) // limit characters to stay safe with token limits
-      .trim();
-
-    if (!cleanedHtml) {
-      return res.status(400).json({ message: 'No content found on the page to parse.' });
+    // Clean content based on source type
+    let cleanedContent;
+    if (source === 'jina') {
+      // Jina returns markdown — light cleaning only
+      cleanedContent = pageContent
+        .replace(/!\[.*?\]\(.*?\)/g, '') // remove markdown images
+        .replace(/\[([^\]]*)\]\(([^)]*)\)/g, '$1') // convert links to text
+        .slice(0, 50000)
+        .trim();
+    } else {
+      // Direct fetch returns HTML — heavy cleaning
+      cleanedContent = pageContent
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+        .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, '')
+        .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, '')
+        .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, '')
+        .replace(/<header\b[^<]*(?:(?!<\/header>)<[^<]*)*<\/header>/gi, '')
+        .replace(/<path\b[^<]*(?:(?!<\/path>)<[^<]*)*<\/path>/gi, '')
+        .replace(/<!\-\-[\s\S]*?\-\->/g, '') // remove HTML comments
+        .replace(/<[^>]+>/g, ' ') // strip remaining HTML tags to plain text
+        .replace(/\s+/g, ' ')
+        .slice(0, 50000)
+        .trim();
     }
 
-    const parsedDetails = await parseJobDetailsFromHtml(cleanedHtml);
+    if (!cleanedContent || cleanedContent.length < 100) {
+      return res.status(400).json({ message: 'The page content was too short or empty to extract job details. Please paste the details manually.' });
+    }
+
+    const parsedDetails = await parseJobDetailsFromHtml(cleanedContent);
     res.json(parsedDetails);
   } catch (error) {
     console.error('Parse job URL error:', error.message);

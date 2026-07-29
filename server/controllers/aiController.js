@@ -460,20 +460,18 @@ const compileLatex = async (req, res) => {
       return res.status(400).json({ message: 'LaTeX content is required' });
     }
 
-    // Call public compilation API (latexonline.cc)
-    // We use a POST request with the 'text' parameter mapped to our LaTeX string
-    const response = await fetch('https://latexonline.cc/compile?command=pdflatex', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain',
-      },
-      body: latex,
+    // Call public compilation API (latexonline.cc using GET endpoint)
+    const compileUrl = `https://latexonline.cc/compile?text=${encodeURIComponent(latex)}`;
+    const response = await fetch(compileUrl, {
+      method: 'GET',
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('LaTeX compilation failed:', errorText);
-      return res.status(400).json({ message: 'LaTeX compilation failed. Please check the syntax.' });
+      // Clean up log output to show user friendly error message if available
+      const logMatch = errorText.match(/error: [^\n]+/i) || [errorText.slice(0, 300)];
+      return res.status(400).json({ message: `LaTeX compilation failed: ${logMatch[0]}` });
     }
 
     // Pass the PDF directly to the client

@@ -288,9 +288,10 @@ const generateResumeLatex = async (userData) => {
 
 CRITICAL SYNTAX REQUIREMENTS:
 1. Use the standard 'article' class (e.g. \\documentclass[10pt,a4paper]{article}).
-2. Use ONLY standard packages that are guaranteed to compile easily (e.g. geometry, hyperref, enumitem, titlesec). DO NOT use fontawesome or custom fonts.
-3. DO NOT INVENT CUSTOM ENVIRONMENTS or COMMANDS (like \\begin{resumeitems} or \\resumeItem). You MUST use standard standard LaTeX environments like \\begin{itemize} and \\item.
-4. Ensure all special LaTeX characters (like %, &, $, #, _) in the user data are properly escaped (e.g. \\&).
+2. Use ONLY standard packages that are guaranteed to compile easily (geometry, hyperref, enumitem, titlesec). DO NOT use ragged2e or fontawesome.
+3. DO NOT INVENT CUSTOM ENVIRONMENTS or COMMANDS (like \\begin{resumeitems} or \\resumeItem). You MUST use standard LaTeX environments like \\begin{itemize}[leftmargin=*] and \\item.
+4. DO NOT use line break commands like \\\\[-0.5em] or \\\\[0.2em] inside \\item lines. Use standard newline \\\\ or standard \\vspace if spacing is needed.
+5. Ensure all special LaTeX characters (like %, &, $, #, _) in the user data are properly escaped (e.g. \\&, \\%).
 
 READABILITY & STRUCTURE REQUIREMENTS:
 1. Keep the code highly readable for beginners.

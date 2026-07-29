@@ -68,6 +68,8 @@ export const getMatchScore = (data) => API.post('/ai/match-score', data);
 export const getInterviewPrep = (data) => API.post('/ai/interview-prep', data);
 export const parseJobUrl = (url) => API.post('/ai/parse-job-url', { url });
 export const rateAndPrepJob = (data) => API.post('/ai/rate-and-prep', data);
+export const buildResumeLatex = (data) => API.post('/ai/build-resume', data);
+export const compileLatexToPdf = (latex) => API.post('/ai/compile-latex', { latex }, { responseType: 'blob' });
 
 // Interviews
 export const getInterviews = (params) => API.get('/interviews', { params });

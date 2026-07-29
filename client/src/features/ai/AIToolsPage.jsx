@@ -9,11 +9,13 @@ import {
   HiOutlineArrowPath,
   HiOutlineChatBubbleBottomCenterText,
 } from 'react-icons/hi2';
+import { useNavigate } from 'react-router-dom';
 import { getResumes, generateCoverLetter, getImproveSuggestions, getInterviewPrep } from '../../services/api';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 
 const AIToolsPage = () => {
+  const navigate = useNavigate();
   const [resumes, setResumes] = useState([]);
   const [selectedResumeId, setSelectedResumeId] = useState('');
   const [jobDescription, setJobDescription] = useState('');
@@ -39,6 +41,7 @@ const AIToolsPage = () => {
     { id: 'cover-letter', label: 'Cover Letter', icon: HiOutlineDocumentText, description: 'Generate a tailored cover letter' },
     { id: 'improve', label: 'Resume Tips', icon: HiOutlineLightBulb, description: 'Get improvement suggestions' },
     { id: 'interview-prep', label: 'Interview Prep', icon: HiOutlineChatBubbleBottomCenterText, description: 'Practice questions & answers' },
+    { id: 'resume-builder', label: 'Resume Builder', icon: HiOutlineClipboardDocument, description: 'Generate LaTeX Resume', navigateTo: '/ai/resume-builder' },
   ];
 
   const handleGenerate = async () => {
@@ -86,7 +89,13 @@ const AIToolsPage = () => {
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => { setActiveTab(tab.id); setResult(null); }}
+            onClick={() => { 
+              if (tab.navigateTo) {
+                navigate(tab.navigateTo);
+              } else {
+                setActiveTab(tab.id); setResult(null); 
+              }
+            }}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
               activeTab === tab.id ? 'bg-primary-500/15 text-primary-400 border border-primary-500/20' : 'bg-surface-800/40 text-surface-200/60 hover:bg-surface-800/60 border border-transparent'
             }`}

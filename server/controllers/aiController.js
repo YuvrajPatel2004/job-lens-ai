@@ -6,6 +6,7 @@ const {
   generateInterviewPrep,
   rateResumeForJob,
   parseJobDetailsFromHtml,
+  generateResumeLatex,
 } = require('../services/geminiService');
 
 // @desc    Generate cover letter
@@ -431,5 +432,65 @@ const parseJobUrl = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// @desc    Build resume LaTeX from user data
+// @route   POST /api/ai/build-resume
+// @access  Private
+const buildResume = async (req, res) => {
+  try {
+    const userData = req.body;
+    if (!userData || Object.keys(userData).length === 0) {
+      return res.status(400).json({ message: 'User data is required to build a resume' });
+    }
 
-module.exports = { coverLetter, improveResume, matchScore, interviewPrep, rateAndPrepHandler, parseJobUrl };
+    const latex = await generateResumeLatex(userData);
+    res.json({ latex });
+  } catch (error) {
+    console.error('Build resume error:', error.message);
+    res.status(500).json({ message: 'Failed to generate resume LaTeX' });
+  }
+};
+
+// @desc    Compile LaTeX to PDF via latexonline.cc
+// @route   POST /api/ai/compile-latex
+// @access  Private
+const compileLatex = async (req, res) => {
+  try {
+    const { latex } = req.body;
+    if (!latex) {
+      return res.status(400).json({ message: 'LaTeX content is required' });
+    }
+
+    // Call public compilation API (latexonline.cc)
+    // We use a POST request with the 'text' parameter mapped to our LaTeX string
+    const response = await fetch('https://latexonline.cc/compile?command=pdflatex', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      body: latex,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('LaTeX compilation failed:', errorText);
+      return res.status(400).json({ message: 'LaTeX compilation failed. Please check the syntax.' });
+    }
+
+    // Pass the PDF directly to the client
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename="resume.pdf"',
+      'Content-Length': buffer.length,
+    });
+    
+    res.send(buffer);
+  } catch (error) {
+    console.error('Compile LaTeX error:', error.message);
+    res.status(500).json({ message: 'Failed to compile LaTeX to PDF' });
+  }
+};
+
+module.exports = { coverLetter, improveResume, matchScore, interviewPrep, rateAndPrepHandler, parseJobUrl, buildResume, compileLatex };

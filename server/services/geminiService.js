@@ -280,6 +280,32 @@ ${content}`;
   return JSON.parse(jsonMatch[0]);
 };
 
+// Generate a professional LaTeX resume from user details
+const generateResumeLatex = async (userData) => {
+  const model = getHeavyModel();
+
+  const prompt = `You are an expert LaTeX resume designer. I will provide you with a user's details, and you must generate a complete, valid LaTeX document for a professional, ATS-friendly resume.
+
+Requirements:
+- Use the standard 'article' class (e.g. \\documentclass[10pt,a4paper]{article}).
+- Use ONLY standard packages that are guaranteed to compile easily (e.g. geometry, hyperref, enumitem, titlesec). DO NOT use fontawesome or custom fonts that require xelatex/lualatex if possible, stick to standard pdflatex compatible fonts.
+- Keep the design clean, modern, and professional (like "Jake's Resume" style).
+- Ensure all special LaTeX characters (like %, &, $, #, _) in the user data are properly escaped.
+- Return ONLY the raw LaTeX code. Do NOT wrap it in markdown code blocks (\`\`\`latex ... \`\`\`). Do NOT include any explanations.
+
+User Data (JSON):
+${JSON.stringify(userData, null, 2)}
+`;
+
+  const result = await model.generateContent(prompt);
+  let latexText = result.response.text();
+  
+  // Clean up any potential markdown fences just in case
+  latexText = latexText.replace(/^```(latex|tex)?/i, '').replace(/```$/i, '').trim();
+  
+  return latexText;
+};
+
 module.exports = {
   analyzeResume,
   getATSScore,
@@ -288,5 +314,6 @@ module.exports = {
   generateInterviewPrep,
   rateResumeForJob,
   parseJobDetailsFromHtml,
+  generateResumeLatex,
 };
 

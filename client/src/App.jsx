@@ -14,6 +14,7 @@ import InterviewsPage from './features/interviews/InterviewsPage';
 import AnalyticsPage from './features/analytics/AnalyticsPage';
 import ProfilePage from './features/profile/ProfilePage';
 import LandingPage from './features/landing/LandingPage';
+import ResumeBuilderPage from './features/resume/ResumeBuilderPage';
 
 function App() {
   return (
@@ -57,6 +58,7 @@ function App() {
             <Route path="/jobs" element={<JobsPage />} />
             <Route path="/resumes" element={<ResumePage />} />
             <Route path="/ai-tools" element={<AIToolsPage />} />
+            <Route path="/ai/resume-builder" element={<ResumeBuilderPage />} />
             <Route path="/email-tracker" element={<EmailTrackerPage />} />
             <Route path="/interviews" element={<InterviewsPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />

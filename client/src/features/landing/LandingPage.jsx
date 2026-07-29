@@ -129,6 +129,35 @@ const stats = [
   { value: '4.9', label: 'User Rating', icon: HiOutlineStar },
 ];
 
+// Interactive 3D Tilt Card Helper Component
+const Tilt3DCard = ({ children, className = '', depth = 15 }) => {
+  const [rotate, setRotate] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    setRotate({ x: -y / depth, y: x / depth });
+  };
+
+  const handleMouseLeave = () => {
+    setRotate({ x: 0, y: 0 });
+  };
+
+  return (
+    <motion.div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      animate={{ rotateX: rotate.x, rotateY: rotate.y }}
+      transition={{ type: 'spring', stiffness: 220, damping: 20 }}
+      style={{ transformStyle: 'preserve-3d', perspective: '1000px' }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
 const LandingPage = () => {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -252,7 +281,6 @@ const LandingPage = () => {
           <div className="absolute top-20 left-1/4 w-[500px] h-[500px] bg-indigo-500/15 rounded-full blur-[120px]" />
           <div className="absolute top-40 right-1/4 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[100px]" />
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-purple-500/8 rounded-full blur-[120px]" />
-          {/* Grid pattern */}
           <div
             className="absolute inset-0 opacity-[0.03]"
             style={{
@@ -336,6 +364,95 @@ const LandingPage = () => {
               </span>
             ))}
           </motion.div>
+
+          {/* ─── 3D INTERACTIVE HERO SHOWCASE CARD ─── */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="mt-16 max-w-4xl mx-auto text-left relative"
+          >
+            <Tilt3DCard depth={12} className="relative rounded-3xl border border-white/10 bg-surface-900/80 backdrop-blur-2xl p-4 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.6)] group overflow-hidden cursor-grab active:cursor-grabbing">
+              {/* Animating gradient highlight */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 via-cyan-500/5 to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+              {/* Header Bar */}
+              <div style={{ transform: 'translateZ(20px)' }} className="flex items-center justify-between border-b border-white/8 pb-4 mb-6">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-rose-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-amber-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+                  <span className="text-xs text-surface-200/40 font-mono ml-2">JobLens AI • Command Center</span>
+                </div>
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                  Live Preview
+                </span>
+              </div>
+
+              {/* Data Grid Mockup */}
+              <div style={{ transform: 'translateZ(30px)' }} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 rounded-2xl bg-surface-850/90 border border-white/6 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">Senior Software Engineer</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold">Interview</span>
+                  </div>
+                  <p className="text-xs text-surface-200/50">Google • Mountain View, CA</p>
+                  <div className="w-full bg-surface-800 rounded-full h-1.5 mt-3">
+                    <div className="bg-emerald-400 h-1.5 rounded-full w-[85%]" />
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-surface-850/90 border border-white/6 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">Product Designer</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 font-bold">Applied</span>
+                  </div>
+                  <p className="text-xs text-surface-200/50">Stripe • Remote</p>
+                  <div className="w-full bg-surface-800 rounded-full h-1.5 mt-3">
+                    <div className="bg-indigo-400 h-1.5 rounded-full w-[60%]" />
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-surface-850/90 border border-white/6 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">AI Research Lead</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 font-bold">Offer</span>
+                  </div>
+                  <p className="text-xs text-surface-200/50">OpenAI • San Francisco, CA</p>
+                  <div className="w-full bg-surface-800 rounded-full h-1.5 mt-3">
+                    <div className="bg-cyan-400 h-1.5 rounded-full w-[95%]" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Parallax 3D Pop-out Badges */}
+              <div 
+                style={{ transform: 'translateZ(65px)' }}
+                className="hidden sm:flex absolute -top-4 -right-4 bg-surface-900/95 border border-indigo-500/40 px-4 py-2.5 rounded-2xl shadow-2xl items-center gap-3 backdrop-blur-xl pointer-events-none"
+              >
+                <div className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg">
+                  <HiOutlineSparkles className="animate-pulse" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-white">ATS Match Score</p>
+                  <p className="text-xs text-indigo-400 font-semibold">94% Highly Compatible</p>
+                </div>
+              </div>
+
+              <div 
+                style={{ transform: 'translateZ(55px)' }}
+                className="hidden sm:flex absolute -bottom-4 -left-4 bg-surface-900/95 border border-cyan-500/40 px-4 py-2.5 rounded-2xl shadow-2xl items-center gap-3 backdrop-blur-xl pointer-events-none"
+              >
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-lg">
+                  <HiOutlineRocketLaunch />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-white">Auto-Join Armed</p>
+                  <p className="text-xs text-cyan-400 font-semibold">Starting in 5 mins</p>
+                </div>
+              </div>
+            </Tilt3DCard>
+          </motion.div>
         </div>
       </motion.section>
 
@@ -394,22 +511,22 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08 }}
-                className="group relative rounded-2xl p-6 border border-white/6 hover:border-white/12 transition-all duration-300 cursor-default flex flex-col h-full"
-                style={{ background: 'rgba(255,255,255,0.02)' }}
               >
-                {/* Hover glow */}
-                <div className={`absolute -inset-px rounded-2xl bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-[0.06] transition-opacity duration-300 blur-xl`} />
-                <div className="relative flex flex-col h-full">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 shadow-lg ${feature.glow} group-hover:scale-110 transition-transform duration-300`}>
-                    <feature.icon className="text-2xl text-white" />
+                <Tilt3DCard depth={18} className="group relative rounded-2xl p-6 border border-white/6 hover:border-white/12 transition-all duration-300 cursor-default flex flex-col h-full bg-surface-900/40 backdrop-blur-xl">
+                  {/* Hover glow */}
+                  <div className={`absolute -inset-px rounded-2xl bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-[0.08] transition-opacity duration-300 blur-xl`} />
+                  <div style={{ transform: 'translateZ(20px)' }} className="relative flex flex-col h-full">
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 shadow-lg ${feature.glow} group-hover:scale-110 transition-transform duration-300`}>
+                      <feature.icon className="text-2xl text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-surface-100 mb-2 group-hover:text-white transition-colors">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sm text-surface-200/50 leading-relaxed flex-grow">
+                      {feature.description}
+                    </p>
                   </div>
-                  <h3 className="text-lg font-semibold text-surface-100 mb-2 group-hover:text-white transition-colors">
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm text-surface-200/50 leading-relaxed flex-grow">
-                    {feature.description}
-                  </p>
-                </div>
+                </Tilt3DCard>
               </motion.div>
             ))}
           </div>
@@ -525,18 +642,21 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className={`rounded-2xl p-6 border ${tool.borderColor} bg-gradient-to-br ${tool.gradient} hover:scale-[1.02] transition-transform duration-300 flex flex-col h-full`}
               >
-                <h3 className="text-lg font-semibold text-surface-100 mb-2">{tool.title}</h3>
-                <p className="text-sm text-surface-200/50 mb-5 leading-relaxed flex-grow">{tool.description}</p>
-                <ul className="space-y-2.5 mt-auto">
-                  {tool.items.map((item) => (
-                    <li key={item} className="flex items-center gap-2.5 text-sm text-surface-200/70">
-                      <HiOutlineCheckCircle className={`text-base flex-shrink-0 ${tool.iconColor}`} />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+                <Tilt3DCard depth={15} className={`rounded-2xl p-6 border ${tool.borderColor} bg-gradient-to-br ${tool.gradient} flex flex-col h-full backdrop-blur-xl`}>
+                  <div style={{ transform: 'translateZ(25px)' }} className="flex flex-col h-full">
+                    <h3 className="text-lg font-semibold text-surface-100 mb-2">{tool.title}</h3>
+                    <p className="text-sm text-surface-200/50 mb-5 leading-relaxed flex-grow">{tool.description}</p>
+                    <ul className="space-y-2.5 mt-auto">
+                      {tool.items.map((item) => (
+                        <li key={item} className="flex items-center gap-2.5 text-sm text-surface-200/70">
+                          <HiOutlineCheckCircle className={`text-base flex-shrink-0 ${tool.iconColor}`} />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </Tilt3DCard>
               </motion.div>
             ))}
           </div>
@@ -575,27 +695,29 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="rounded-2xl p-6 border border-white/6 hover:border-white/10 transition-all flex flex-col h-full"
-                style={{ background: 'rgba(255,255,255,0.02)' }}
               >
-                {/* Stars */}
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: t.rating }).map((_, s) => (
-                    <HiOutlineStar key={s} className="text-amber-400 text-sm" style={{ fill: 'currentColor' }} />
-                  ))}
-                </div>
-                <p className="text-sm text-surface-200/70 leading-relaxed mb-5 italic flex-grow">
-                  &ldquo;{t.text}&rdquo;
-                </p>
-                <div className="flex items-center gap-3 mt-auto">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
-                    {t.name.split(' ').map((n) => n[0]).join('')}
+                <Tilt3DCard depth={20} className="rounded-2xl p-6 border border-white/6 hover:border-white/10 transition-all flex flex-col h-full bg-surface-900/40 backdrop-blur-xl">
+                  <div style={{ transform: 'translateZ(20px)' }} className="flex flex-col h-full">
+                    {/* Stars */}
+                    <div className="flex gap-0.5 mb-4">
+                      {Array.from({ length: t.rating }).map((_, s) => (
+                        <HiOutlineStar key={s} className="text-amber-400 text-sm" style={{ fill: 'currentColor' }} />
+                      ))}
+                    </div>
+                    <p className="text-sm text-surface-200/70 leading-relaxed mb-5 italic flex-grow">
+                      &ldquo;{t.text}&rdquo;
+                    </p>
+                    <div className="flex items-center gap-3 mt-auto">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                        {t.name.split(' ').map((n) => n[0]).join('')}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-surface-100 truncate">{t.name}</p>
+                        <p className="text-xs text-surface-200/40 truncate">{t.role}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-surface-100 truncate">{t.name}</p>
-                    <p className="text-xs text-surface-200/40 truncate">{t.role}</p>
-                  </div>
-                </div>
+                </Tilt3DCard>
               </motion.div>
             ))}
           </div>
@@ -611,26 +733,25 @@ const LandingPage = () => {
           className="max-w-4xl mx-auto text-center relative"
         >
           <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-cyan-500/10 blur-3xl" />
-          <div
-            className="relative rounded-3xl p-12 sm:p-16 border border-white/8"
-            style={{ background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(20px)' }}
-          >
-            <HiOutlineRocketLaunch className="text-4xl text-indigo-400 mx-auto mb-4" />
-            <h2 className="text-3xl sm:text-4xl font-bold text-surface-100 mb-4">
-              Ready to Supercharge Your Job Search?
-            </h2>
-            <p className="text-surface-200/50 text-lg max-w-xl mx-auto mb-8">
-              Join thousands of job seekers using AI to land their dream roles faster.
-            </p>
-            <Link
-              to="/register"
-              className="group inline-flex items-center gap-2 px-10 py-4 text-base font-semibold text-white rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all active:scale-[0.97]"
-            >
-              Get Started Free
-              <HiOutlineArrowRight className="group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <p className="text-xs text-surface-200/30 mt-4">No credit card required • Free forever plan</p>
-          </div>
+          <Tilt3DCard depth={10} className="relative rounded-3xl p-12 sm:p-16 border border-white/8 bg-surface-900/60 backdrop-blur-2xl">
+            <div style={{ transform: 'translateZ(30px)' }}>
+              <HiOutlineRocketLaunch className="text-4xl text-indigo-400 mx-auto mb-4" />
+              <h2 className="text-3xl sm:text-4xl font-bold text-surface-100 mb-4">
+                Ready to Supercharge Your Job Search?
+              </h2>
+              <p className="text-surface-200/50 text-lg max-w-xl mx-auto mb-8">
+                Join thousands of job seekers using AI to land their dream roles faster.
+              </p>
+              <Link
+                to="/register"
+                className="group inline-flex items-center gap-2 px-10 py-4 text-base font-semibold text-white rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all active:scale-[0.97]"
+              >
+                Get Started Free
+                <HiOutlineArrowRight className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <p className="text-xs text-surface-200/30 mt-4">No credit card required • Free forever plan</p>
+            </div>
+          </Tilt3DCard>
         </motion.div>
       </section>
 

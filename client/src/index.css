@@ -153,3 +153,13 @@ body {
 .priority-high { color: var(--color-danger); border-color: var(--color-danger); }
 .priority-medium { color: var(--color-warning); border-color: var(--color-warning); }
 .priority-low { color: var(--color-success); border-color: var(--color-success); }
+
+@keyframes gradient-slow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-gradient-slow {
+  background-size: 200% 200%;
+  animation: gradient-slow 15s ease-in-out infinite;
+}

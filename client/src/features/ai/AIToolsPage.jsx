@@ -283,14 +283,81 @@ const AIToolsPage = () => {
               )}
             </motion.div>
           ) : (
-            <Card className="text-center py-20">
-              <HiOutlineSparkles className="text-5xl text-surface-200/15 mx-auto mb-4" />
-              <p className="text-surface-200/40 text-sm">
-                Select a tool, provide your inputs, and click Generate
-              </p>
-            </Card>
+            <AICoreVisualizer />
           )}
         </div>
+      </div>
+    </div>
+  );
+};
+
+const AICoreVisualizer = () => {
+  const [rotate, setRotate] = useState({ x: 10, y: -15 });
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    setRotate({ x: -y / 6, y: x / 6 });
+  };
+
+  const handleMouseLeave = () => {
+    setRotate({ x: 10, y: -15 });
+  };
+
+  return (
+    <div 
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative w-full h-[450px] rounded-3xl bg-surface-900/40 border border-white/8 flex flex-col items-center justify-center overflow-hidden shadow-2xl transition-all duration-300 hover:border-primary-500/20 group"
+      style={{ perspective: '1200px' }}
+    >
+      {/* Animating mesh gradients */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/10 via-accent-500/5 to-transparent animate-gradient-slow opacity-75" />
+      <div className="absolute -top-40 -left-40 w-96 h-96 bg-primary-600/10 rounded-full blur-3xl pointer-events-none group-hover:bg-primary-600/15 transition-all duration-500" />
+      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-accent-600/10 rounded-full blur-3xl pointer-events-none group-hover:bg-accent-600/15 transition-all duration-500" />
+
+      {/* 3D Visualizer Node */}
+      <motion.div 
+        className="relative w-36 h-36 select-none cursor-grab active:cursor-grabbing"
+        animate={{ 
+          transform: `rotateX(${rotate.x}deg) rotateY(${rotate.y}deg)`,
+        }}
+        transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+        style={{ transformStyle: 'preserve-3d' }}
+      >
+        {/* Outer orbital rings */}
+        <div className="absolute inset-[-40px] rounded-full border border-dashed border-primary-500/30 animate-spin pointer-events-none" style={{ animationDuration: '25s', transform: 'translateZ(0px)' }} />
+        <div className="absolute inset-[-20px] rounded-full border border-dotted border-accent-500/40 animate-spin pointer-events-none" style={{ animationDuration: '15s', animationDirection: 'reverse', transform: 'translateZ(10px)' }} />
+
+        {/* 3D Glass Prism/Cube */}
+        {/* Front face */}
+        <div className="absolute inset-0 rounded-2xl border border-primary-400/40 bg-gradient-to-br from-primary-500/20 to-primary-500/5 backdrop-blur-md flex items-center justify-center shadow-[0_0_30px_rgba(37,99,235,0.2)]" style={{ transform: 'translateZ(65px)' }}>
+          <HiOutlineSparkles className="text-3xl text-primary-400 animate-pulse" />
+        </div>
+        {/* Back face */}
+        <div className="absolute inset-0 rounded-2xl border border-accent-400/30 bg-gradient-to-br from-accent-500/10 to-transparent backdrop-blur-md" style={{ transform: 'translateZ(-65px) rotateY(180deg)' }} />
+        {/* Left face */}
+        <div className="absolute inset-0 rounded-2xl border border-primary-500/20 bg-surface-900/80 backdrop-blur-md" style={{ transform: 'translateX(-65px) rotateY(-90deg)' }} />
+        {/* Right face */}
+        <div className="absolute inset-0 rounded-2xl border border-accent-500/20 bg-surface-900/80 backdrop-blur-md" style={{ transform: 'translateX(65px) rotateY(90deg)' }} />
+        {/* Top face */}
+        <div className="absolute inset-0 rounded-2xl border border-primary-400/30 bg-gradient-to-b from-primary-500/15 to-transparent backdrop-blur-md" style={{ transform: 'translateY(-65px) rotateX(90deg)' }} />
+        {/* Bottom face */}
+        <div className="absolute inset-0 rounded-2xl border border-accent-400/30 bg-gradient-to-t from-accent-500/15 to-transparent backdrop-blur-md" style={{ transform: 'translateY(65px) rotateX(-90deg)' }} />
+      </motion.div>
+
+      {/* Floating particles */}
+      <div className="absolute top-1/4 left-1/4 w-2.5 h-2.5 rounded-full bg-primary-400/40 animate-ping" style={{ animationDuration: '3s' }} />
+      <div className="absolute bottom-1/4 right-1/4 w-2 h-2 rounded-full bg-accent-400/40 animate-ping" style={{ animationDuration: '4s', animationDelay: '1s' }} />
+
+      <div className="mt-12 text-center px-6 z-10 select-none pointer-events-none">
+        <h3 className="text-xl font-bold text-white tracking-tight flex items-center justify-center gap-2">
+          Interactive AI Core
+        </h3>
+        <p className="text-sm text-surface-200/50 mt-2 max-w-sm mx-auto">
+          Hover your mouse or click and drag over the widget to rotate the 3D projection model in real-time.
+        </p>
       </div>
     </div>
   );

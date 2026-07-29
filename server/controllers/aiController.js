@@ -254,36 +254,61 @@ const parseJobUrl = async (req, res) => {
       return res.status(400).json({ message: 'URL is required' });
     }
 
-    // Basic URL validation
+    let parsedUrl;
     try {
-      new URL(url);
+      parsedUrl = new URL(url);
     } catch (e) {
       return res.status(400).json({ message: 'Invalid URL format' });
+    }
+
+    const hostname = parsedUrl.hostname.toLowerCase();
+
+    // Site-specific URL transformations for better scraping
+    let scrapingUrl = url;
+
+    // LinkedIn: Rewrite to guest-accessible embed view
+    if (hostname.includes('linkedin.com')) {
+      const jobIdMatch = url.match(/(?:jobs\/view|currentJobId=)\/?(\d+)/);
+      if (jobIdMatch) {
+        // LinkedIn embed view is publicly accessible without login
+        scrapingUrl = `https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/${jobIdMatch[1]}`;
+      }
+    }
+
+    // Naukri: Clean URL to remove login-gated parameters
+    if (hostname.includes('naukri.com')) {
+      scrapingUrl = url.split('?')[0]; // Remove query parameters that trigger login walls
     }
 
     let pageContent = '';
     let source = '';
 
-    // Strategy 1: Jina Reader (best for JS-rendered sites like LinkedIn, Indeed, Glassdoor)
+    // Strategy 1: Jina Reader (best for JS-heavy sites)
     try {
-      const jinaUrl = `https://r.jina.ai/${url}`;
+      const jinaUrl = `https://r.jina.ai/${scrapingUrl}`;
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
+      const timeout = setTimeout(() => controller.abort(), 20000);
+
+      const jinaHeaders = {
+        'Accept': 'text/plain',
+        'X-Return-Format': 'markdown',
+        'X-No-Cache': 'true',
+      };
+
+      // Support optional Jina API key for higher rate limits
+      if (process.env.JINA_API_KEY) {
+        jinaHeaders['Authorization'] = `Bearer ${process.env.JINA_API_KEY}`;
+      }
 
       const response = await fetch(jinaUrl, {
-        headers: {
-          'Accept': 'text/plain',
-          'X-Return-Format': 'markdown',
-          'X-No-Cache': 'true',
-        },
+        headers: jinaHeaders,
         signal: controller.signal,
       });
       clearTimeout(timeout);
 
       if (response.ok) {
         const text = await response.text();
-        // Jina sometimes returns error pages; check for meaningful content
-        if (text && text.length > 200 && !text.includes('Unable to retrieve') && !text.includes('403 Forbidden')) {
+        if (text && text.length > 200 && !text.includes('Unable to retrieve') && !text.includes('403 Forbidden') && !text.includes('Sign in') && !text.includes('Log in to')) {
           pageContent = text;
           source = 'jina';
         }
@@ -292,11 +317,10 @@ const parseJobUrl = async (req, res) => {
       console.warn('Jina Reader fetch failed:', err.message);
     }
 
-    // Strategy 2: Direct fetch with multiple user-agent rotations
+    // Strategy 2: Direct fetch (for LinkedIn guest API and simple sites)
     if (!pageContent) {
       const userAgents = [
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15',
         'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
       ];
 
@@ -305,7 +329,7 @@ const parseJobUrl = async (req, res) => {
           const controller = new AbortController();
           const timeout = setTimeout(() => controller.abort(), 10000);
 
-          const response = await fetch(url, {
+          const response = await fetch(scrapingUrl, {
             headers: {
               'User-Agent': ua,
               'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -319,8 +343,7 @@ const parseJobUrl = async (req, res) => {
 
           if (response.ok) {
             const text = await response.text();
-            // Check if we got meaningful HTML (not a login wall or empty shell)
-            if (text && text.length > 500 && (text.includes('job') || text.includes('position') || text.includes('role') || text.includes('description') || text.includes('apply'))) {
+            if (text && text.length > 300) {
               pageContent = text;
               source = 'direct';
               break;
@@ -332,23 +355,48 @@ const parseJobUrl = async (req, res) => {
       }
     }
 
+    // Strategy 3: Google Webcache fallback (for sites that block direct access)
+    if (!pageContent) {
+      try {
+        const cacheUrl = `https://webcache.googleusercontent.com/search?q=cache:${encodeURIComponent(url)}`;
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+
+        const response = await fetch(cacheUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+          },
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+
+        if (response.ok) {
+          const text = await response.text();
+          if (text && text.length > 500) {
+            pageContent = text;
+            source = 'cache';
+          }
+        }
+      } catch (err) {
+        console.warn('Google cache fetch failed:', err.message);
+      }
+    }
+
     if (!pageContent) {
       return res.status(400).json({
-        message: 'Could not fetch content from this job URL. The site may block automated access. Please paste the job details manually.',
+        message: 'Could not fetch content from this job URL. The site may require login or block automated access. Try copying the job description and pasting it manually.',
       });
     }
 
     // Clean content based on source type
     let cleanedContent;
     if (source === 'jina') {
-      // Jina returns markdown — light cleaning only
       cleanedContent = pageContent
-        .replace(/!\[.*?\]\(.*?\)/g, '') // remove markdown images
-        .replace(/\[([^\]]*)\]\(([^)]*)\)/g, '$1') // convert links to text
+        .replace(/!\[.*?\]\(.*?\)/g, '')
+        .replace(/\[([^\]]*)\]\(([^)]*)\)/g, '$1')
         .slice(0, 50000)
         .trim();
     } else {
-      // Direct fetch returns HTML — heavy cleaning
       cleanedContent = pageContent
         .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
         .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
@@ -357,18 +405,26 @@ const parseJobUrl = async (req, res) => {
         .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, '')
         .replace(/<header\b[^<]*(?:(?!<\/header>)<[^<]*)*<\/header>/gi, '')
         .replace(/<path\b[^<]*(?:(?!<\/path>)<[^<]*)*<\/path>/gi, '')
-        .replace(/<!\-\-[\s\S]*?\-\->/g, '') // remove HTML comments
-        .replace(/<[^>]+>/g, ' ') // strip remaining HTML tags to plain text
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/<[^>]+>/g, ' ')
         .replace(/\s+/g, ' ')
         .slice(0, 50000)
         .trim();
     }
 
     if (!cleanedContent || cleanedContent.length < 100) {
-      return res.status(400).json({ message: 'The page content was too short or empty to extract job details. Please paste the details manually.' });
+      return res.status(400).json({ message: 'The page content was too short or empty to extract job details. Try copying the job description and pasting it manually.' });
     }
 
     const parsedDetails = await parseJobDetailsFromHtml(cleanedContent);
+
+    // Check if all critical fields came back null
+    if (!parsedDetails.company && !parsedDetails.position && !parsedDetails.description) {
+      return res.status(400).json({
+        message: 'Could not extract meaningful job details from this page. The site may require login. Try copying the job description and pasting it manually.',
+      });
+    }
+
     res.json(parsedDetails);
   } catch (error) {
     console.error('Parse job URL error:', error.message);

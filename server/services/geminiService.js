@@ -9,13 +9,19 @@ const getGenAI = () => {
   return genAI;
 };
 
-const getModel = () => {
+// Heavy model — used for deep analysis (resume rating, cover letters, interview prep)
+const getHeavyModel = () => {
+  return getGenAI().getGenerativeModel({ model: 'gemini-2.5-flash' });
+};
+
+// Lite model — used for lightweight tasks (job parsing, ATS scores, quick extraction)
+const getLiteModel = () => {
   return getGenAI().getGenerativeModel({ model: 'gemini-3.6-flash' });
 };
 
 // Analyze resume against a job description
 const analyzeResume = async (resumeText, jobDescription) => {
-  const model = getModel();
+  const model = getHeavyModel();
 
   const prompt = `You are an expert ATS (Applicant Tracking System) resume analyzer. Analyze the following resume against the provided job description.
 
@@ -61,7 +67,7 @@ ${jobDescription || 'No specific job description provided. Analyze for general A
 
 // Get ATS score only (quick analysis)
 const getATSScore = async (resumeText) => {
-  const model = getModel();
+  const model = getLiteModel();
 
   const prompt = `You are an ATS expert. Rate this resume's ATS compatibility from 0-100.
 Consider: keyword density, formatting, section structure, clarity, and readability.
@@ -79,7 +85,7 @@ ${resumeText}`;
 
 // Get improvement suggestions
 const getImprovementSuggestions = async (resumeText, jobDescription) => {
-  const model = getModel();
+  const model = getLiteModel();
 
   const prompt = `You are a professional resume coach. Provide specific, actionable improvement suggestions for this resume.
 ${jobDescription ? `Target role based on this job description: ${jobDescription}` : ''}
@@ -100,7 +106,7 @@ ${resumeText}`;
 
 // Generate cover letter
 const generateCoverLetter = async (resumeText, jobDescription, companyName) => {
-  const model = getModel();
+  const model = getHeavyModel();
 
   const prompt = `You are an expert career advisor. Write a professional, compelling cover letter based on the candidate's resume and the job description.
 
@@ -130,7 +136,7 @@ COMPANY: ${companyName || 'the company'}`;
 
 // Generate interview prep questions
 const generateInterviewPrep = async (resumeText, jobDescription, companyName) => {
-  const model = getModel();
+  const model = getHeavyModel();
 
   const prompt = `You are an interview coach. Based on the resume and job description, generate likely interview questions and suggested answers.
 
@@ -155,7 +161,7 @@ COMPANY: ${companyName || 'the company'}`;
 
 // Rate resume against a specific job and company (deep analysis)
 const rateResumeForJob = async (resumeText, jobDescription, companyName) => {
-  const model = getModel();
+  const model = getHeavyModel();
 
   const prompt = `You are an elite career coach and hiring expert. Perform a comprehensive analysis of this resume against the job description at ${companyName || 'the company'}.
 
@@ -240,7 +246,7 @@ COMPANY: ${companyName || 'Not specified'}`;
 
 // Extract job details from webpage content (HTML or markdown)
 const parseJobDetailsFromHtml = async (content) => {
-  const model = getModel();
+  const model = getLiteModel();
 
   const prompt = `You are an expert at extracting structured job posting details from webpage content. The content below may be in HTML, markdown, or plain text format — handle all formats gracefully.
 

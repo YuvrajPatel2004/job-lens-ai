@@ -38,16 +38,16 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2 }}
             className={`relative w-full ${sizes[size]} rounded-2xl border border-white/8 shadow-2xl max-h-[85vh] overflow-y-auto`}
-            style={{ background: 'rgba(20, 22, 38, 0.98)', backdropFilter: 'blur(20px)' }}
+            style={{ background: 'rgba(10, 12, 22, 0.98)', backdropFilter: 'blur(20px)' }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+            <div className="sticky top-0 z-20 flex items-center justify-between px-6 py-4 border-b border-white/8 bg-surface-900/95 backdrop-blur-md">
               <h2 className="text-lg font-semibold text-surface-100">
                 {title}
               </h2>
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-lg text-surface-200/50 hover:bg-white/5 hover:text-surface-100 transition-colors"
+                className="p-1.5 rounded-lg text-surface-200/50 hover:bg-white/10 hover:text-surface-100 transition-colors"
               >
                 <HiOutlineXMark className="text-xl" />
               </button>

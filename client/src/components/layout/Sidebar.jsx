@@ -49,7 +49,7 @@ const Sidebar = () => {
         collapsed ? 'w-20' : 'w-64'
       }`}
       style={{
-        background: 'rgba(15, 18, 30, 0.9)',
+        background: 'rgba(9, 10, 18, 0.95)',
         backdropFilter: 'blur(20px)',
         borderRight: '1px solid rgba(255,255,255,0.06)',
       }}

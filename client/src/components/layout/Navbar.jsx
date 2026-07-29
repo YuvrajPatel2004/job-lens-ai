@@ -12,6 +12,7 @@ import {
   HiOutlineXMark,
   HiOutlineUser,
   HiOutlineArrowRightOnRectangle,
+  HiOutlineEnvelope,
 } from 'react-icons/hi2';
 
 const navItems = [
@@ -19,6 +20,7 @@ const navItems = [
   { path: '/jobs', icon: HiOutlineBriefcase, label: 'Jobs' },
   { path: '/resumes', icon: HiOutlineDocumentText, label: 'Resume' },
   { path: '/ai-tools', icon: HiOutlineSparkles, label: 'AI' },
+  { path: '/email-tracker', icon: HiOutlineEnvelope, label: 'Tracker' },
   { path: '/interviews', icon: HiOutlineCalendar, label: 'Schedule' },
   { path: '/analytics', icon: HiOutlineChartBar, label: 'Analytics' },
 ];
@@ -44,7 +46,7 @@ const Navbar = () => {
     <>
       {/* Mobile top bar */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3"
-        style={{ background: 'rgba(15, 18, 30, 0.95)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ background: 'rgba(9, 10, 18, 0.95)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
       >
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg gradient-accent flex items-center justify-center">

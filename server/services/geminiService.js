@@ -286,12 +286,19 @@ const generateResumeLatex = async (userData) => {
 
   const prompt = `You are an expert LaTeX resume designer. I will provide you with a user's details, and you must generate a complete, valid LaTeX document for a professional, ATS-friendly resume.
 
-Requirements:
-- Use the standard 'article' class (e.g. \\documentclass[10pt,a4paper]{article}).
-- Use ONLY standard packages that are guaranteed to compile easily (e.g. geometry, hyperref, enumitem, titlesec). DO NOT use fontawesome or custom fonts that require xelatex/lualatex if possible, stick to standard pdflatex compatible fonts.
-- Keep the design clean, modern, and professional (like "Jake's Resume" style).
-- Ensure all special LaTeX characters (like %, &, $, #, _) in the user data are properly escaped.
-- Return ONLY the raw LaTeX code. Do NOT wrap it in markdown code blocks (\`\`\`latex ... \`\`\`). Do NOT include any explanations.
+CRITICAL SYNTAX REQUIREMENTS:
+1. Use the standard 'article' class (e.g. \\documentclass[10pt,a4paper]{article}).
+2. Use ONLY standard packages that are guaranteed to compile easily (e.g. geometry, hyperref, enumitem, titlesec). DO NOT use fontawesome or custom fonts.
+3. DO NOT INVENT CUSTOM ENVIRONMENTS or COMMANDS (like \\begin{resumeitems} or \\resumeItem). You MUST use standard standard LaTeX environments like \\begin{itemize} and \\item.
+4. Ensure all special LaTeX characters (like %, &, $, #, _) in the user data are properly escaped (e.g. \\&).
+
+READABILITY & STRUCTURE REQUIREMENTS:
+1. Keep the code highly readable for beginners.
+2. Add clear comments before each section (e.g., % --- Education ---).
+3. Use blank lines to separate sections and make the code easy to digest.
+4. Keep the design clean, modern, and professional (like "Jake's Resume" style).
+
+Return ONLY the raw LaTeX code. Do NOT wrap it in markdown code blocks (\`\`\`latex ... \`\`\`). Do NOT include any explanations.
 
 User Data (JSON):
 ${JSON.stringify(userData, null, 2)}

@@ -27,6 +27,8 @@ const ResumeBuilderPage = () => {
     experience: '',
     education: '',
     skills: '',
+    certifications: '',
+    languages: '',
     projects: ''
   });
 
@@ -140,6 +142,15 @@ const ResumeBuilderPage = () => {
                   <textarea rows={2} value={formData.skills} onChange={inputHandler('skills')} placeholder="e.g. JavaScript, React, Node.js, Python..."
                     className="w-full px-4 py-2.5 rounded-xl bg-surface-800/80 border border-white/8 text-surface-100 placeholder-surface-200/30 text-sm focus:outline-none focus:border-primary-500/50 resize-none" />
                 </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-surface-200/80">Certifications</label>
+                  <textarea rows={2} value={formData.certifications} onChange={inputHandler('certifications')} placeholder="e.g. AWS Certified Solutions Architect, Google Cloud Professional..."
+                    className="w-full px-4 py-2.5 rounded-xl bg-surface-800/80 border border-white/8 text-surface-100 placeholder-surface-200/30 text-sm focus:outline-none focus:border-primary-500/50 resize-none" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-surface-200/80">Languages</label>
+                  <Input placeholder="e.g. English (Native), Spanish (Fluent), French (Basic)" value={formData.languages} onChange={inputHandler('languages')} />
+                </div>
               </div>
 
               <div className="flex justify-end mt-8">
@@ -164,7 +175,8 @@ const ResumeBuilderPage = () => {
                 </div>
               </div>
               <p className="text-sm text-surface-200/60 mb-4">
-                Make any manual adjustments to the generated LaTeX code below before compiling.
+                Make any manual adjustments to the generated LaTeX code below before compiling. 
+                Look for the comments (e.g. <code>% --- Education ---</code>) to easily find sections.
               </p>
               <textarea
                 value={latexCode}

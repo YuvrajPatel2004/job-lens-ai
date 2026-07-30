@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
@@ -40,6 +41,7 @@ function App() {
             },
           }}
         />
+        <Analytics />
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
